@@ -53,17 +53,17 @@ def calculate_epi(original, filtered):
 
 # 预条件共轭梯度法 (PCG)
 def pcg_denoising(W, D, b, original_image, tol=1e-6, max_iter=50):
-    L = D - W  # 图拉普拉斯矩阵
-    x = np.zeros_like(b, dtype=np.float64)  # 确保 x 为 float64 类型
+    L = D - W  
+    x = np.zeros_like(b, dtype=np.float64) 
     r = b - L @ x
-    z = spla.spsolve(D, r)  # 使用度矩阵作为预条件器
+    z = spla.spsolve(D, r)  
     p = z
     rs_old = r @ z
 
     for i in range(max_iter):
         Ap = L @ p
         alpha = rs_old / (p @ Ap)
-        x += alpha * p  # 确保 x 的类型为 float64
+        x += alpha * p 
         r -= alpha * Ap
         z = spla.spsolve(D, r)
         rs_new = r @ z
@@ -74,11 +74,11 @@ def pcg_denoising(W, D, b, original_image, tol=1e-6, max_iter=50):
         p = z + (rs_new / rs_old) * p
         rs_old = rs_new
 
-    return x.clip(0, 255)  # 返回裁剪后的结果
+    return x.clip(0, 255) 
 
 # Nesterov 加速法
 def nesterov_denoising(W, D, b, original_image, max_iter=50):
-    x = np.zeros_like(b, dtype=np.float64)  # 确保 x 为 float64 类型
+    x = np.zeros_like(b, dtype=np.float64) 
     y = np.zeros_like(b, dtype=np.float64)
     t = 1
 
@@ -93,12 +93,11 @@ def nesterov_denoising(W, D, b, original_image, max_iter=50):
         y = x + beta * (x - x_old)
         t = t_new
 
-    return x.clip(0, 255)  # 返回裁剪后的结果
+    return x.clip(0, 255)
 
 # 主程序
 if __name__ == "__main__":
-    # 加载彩色图像
-    image_path = "output_images/1.jpg"  # 替换为实际图像路径
+    image_path = "output_images/1.jpg" 
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError("无法加载输入图像，请检查路径！")
@@ -136,7 +135,6 @@ if __name__ == "__main__":
     pcg_image = np.stack(denoised_channels_pcg, axis=2).astype(np.uint8)
     nesterov_image = np.stack(denoised_channels_nesterov, axis=2).astype(np.uint8)
 
-    # 显示结果
     plt.figure(figsize=(15, 10))
     plt.subplot(1, 3, 1)
     plt.title("Original Noisy Image")
