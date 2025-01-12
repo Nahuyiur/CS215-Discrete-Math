@@ -15,7 +15,7 @@ def psnr(image1, image2):
     """计算峰值信噪比 (PSNR)"""
     mse_value = mse(image1, image2)
     max_pixel = 255.0
-    if mse_value == 0:  # 防止 log(0) 错误
+    if mse_value == 0:  
         return float('inf')
     return 20 * np.log10(max_pixel / np.sqrt(mse_value))
 
@@ -46,14 +46,11 @@ def image_denoising_bk_grayscale(image, data_weight=500, smooth_weight=50, sigma
     source = num_pixels  # Source node index
     sink = num_pixels + 1  # Sink node index
 
-    # 创建有向图
     graph = nx.DiGraph()
 
-    # 像素索引转换
     def pixel_index(x, y):
         return x * w + y
-
-    # 转换图像为 float64，避免溢出
+    
     image = image.astype(np.float64)
 
     # 添加数据项（源点和汇点）
@@ -72,7 +69,7 @@ def image_denoising_bk_grayscale(image, data_weight=500, smooth_weight=50, sigma
     for i in range(h):
         for j in range(w):
             idx = pixel_index(i, j)
-            for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # 4邻域
+            for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]: 
                 ni, nj = i + di, j + dj
                 if 0 <= ni < h and 0 <= nj < w:
                     neighbor_idx = pixel_index(ni, nj)
@@ -88,7 +85,7 @@ def image_denoising_bk_grayscale(image, data_weight=500, smooth_weight=50, sigma
 
     # 根据流量结果更新图像
     denoised_image = np.zeros_like(image, dtype=np.uint8)
-    reachable = nx.minimum_cut(graph, source, sink)[1][0]  # 可达节点
+    reachable = nx.minimum_cut(graph, source, sink)[1][0]  
     for i in range(h):
         for j in range(w):
             idx = pixel_index(i, j)
@@ -98,8 +95,7 @@ def image_denoising_bk_grayscale(image, data_weight=500, smooth_weight=50, sigma
 
 
 if __name__ == "__main__":
-    # 加载图像
-    input_image_path = "gamma_noise_grey.jpg"  # 替换为您实际的文件路径
+    input_image_path = "gamma_noise_grey.jpg" 
     input_image = cv2.imread(input_image_path, cv2.IMREAD_GRAYSCALE)
     if input_image is None:
         raise FileNotFoundError("输入图像路径无效，请检查！")
@@ -119,14 +115,12 @@ if __name__ == "__main__":
     ssim_value = calculate_ssim(input_image, denoised_image)
     epi_value = calculate_epi(input_image, denoised_image)
 
-    # 打印性能指标
     print(f"MSE: {mse_value:.2f}")
     print(f"PSNR: {psnr_value:.2f} dB")
     print(f"SSIM: {ssim_value:.4f}")
     print(f"EPI: {epi_value:.4f}")
     print(f"Execution Time: {execution_time:.4f} seconds")
 
-    # 显示结果
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
     plt.title("Original Image")

@@ -9,7 +9,7 @@ import time
 def compute_pixel_weight(diff, di, dj, sigma, alpha):
     diff_norm = np.sum(diff ** 2)
     exp_value = -diff_norm / (2 * sigma ** 2)
-    exp_value = np.clip(exp_value, -100, 0)  # 限制指数范围，避免溢出
+    exp_value = np.clip(exp_value, -100, 0)  
     color_similarity = np.exp(exp_value)
     spatial_similarity = np.exp(-(di ** 2 + dj ** 2) / (2 * alpha ** 2))
     return color_similarity * spatial_similarity
@@ -20,19 +20,18 @@ def compute_weight_matrix_color_enhanced(image, sigma, alpha=0.5):
     row_indices = []
     col_indices = []
     values = []
-    flat_image = image.reshape(-1, 3)  # 展平为 (像素数, RGB)
+    flat_image = image.reshape(-1, 3)  
 
-    # 遍历像素和其邻域
     for i in range(height):
         for j in range(width):
             idx = i * width + j
-            for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # 4邻域
+            for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 ni, nj = i + di, j + dj
                 if 0 <= ni < height and 0 <= nj < width:
                     n_idx = ni * width + nj
                     diff = flat_image[idx] - flat_image[n_idx]
                     weight = compute_pixel_weight(diff, di, dj, sigma, alpha)
-                    if weight > 1e-5:  # 过滤掉极小权重
+                    if weight > 1e-5: 
                         row_indices.append(idx)
                         col_indices.append(n_idx)
                         values.append(weight)
@@ -40,7 +39,7 @@ def compute_weight_matrix_color_enhanced(image, sigma, alpha=0.5):
     weights = csr_matrix((values, (row_indices, col_indices)), shape=(height * width, height * width))
     return weights
 
-# 随机游走降噪函数（优化）
+# 随机游走降噪函数
 def random_walk_denoising_color_enhanced(image, weights, iterations=10, tol=1e-3, beta=0.8, update_interval=5):
     height, width, channels = image.shape
     flat_image = image.reshape(-1, channels).astype(np.float32)
@@ -56,9 +55,9 @@ def random_walk_denoising_color_enhanced(image, weights, iterations=10, tol=1e-3
             weights = compute_weight_matrix_color_enhanced(new_image.reshape(height, width, channels), sigma=10, alpha=1.5)
         
         # 增强通道间相关性
-        flat_image = beta * new_image + (1 - beta) * flat_image  # 引入历史信息
-        flat_image = np.clip(flat_image, 0, 255)  # 限制值范围
-        if np.linalg.norm(new_image - flat_image) < tol:  # 收敛条件
+        flat_image = beta * new_image + (1 - beta) * flat_image  
+        flat_image = np.clip(flat_image, 0, 255) 
+        if np.linalg.norm(new_image - flat_image) < tol: 
             break
     return flat_image.reshape(height, width, channels).astype(np.uint8)
 
@@ -81,13 +80,10 @@ def calculate_epi(original, filtered):
     diff = np.abs(original - filtered)
     return np.mean(diff)
 
-# 加载图像路径
 image_path = 'gaussian_noise_colored.jpg'
 
-# 加载彩色图像
 image = cv2.imread(image_path)
 
-# 合理设置参数组，降低高噪声影响
 params = [
     {"sigma": 5, "alpha": 1.0},   # 更低的平滑，适合轻噪声
     {"sigma": 8, "alpha": 1.2},   # 中等平滑，适合中噪声
@@ -95,10 +91,9 @@ params = [
     {"sigma": 12, "alpha": 2.0}   # 更强平滑，适合较高噪声
 ]
 
-# 初始化绘图
 plt.figure(figsize=(15, 10))
 
-# 对不同参数进行降噪处理并显示结果
+
 for i, param in enumerate(params):
     start_time = time.time()
     weights = compute_weight_matrix_color_enhanced(image, sigma=param["sigma"], alpha=param["alpha"])
@@ -111,7 +106,6 @@ for i, param in enumerate(params):
     ssim_value = calculate_ssim_multichannel(image, denoised_image)
     epi_value = calculate_epi(image, denoised_image)
 
-    # 打印性能指标
     print(f"Sigma={param['sigma']}, Alpha={param['alpha']}")
     print(f"MSE: {mse_value:.2f}")
     print(f"PSNR: {psnr_value:.2f} dB")
@@ -120,7 +114,6 @@ for i, param in enumerate(params):
     print(f"Execution Time: {execution_time:.4f} seconds")
     print("-" * 40)
     
-    # 显示结果
     plt.subplot(2, 2, i + 1)
     plt.title(f"Sigma={param['sigma']}, Alpha={param['alpha']}")
     plt.imshow(cv2.cvtColor(denoised_image, cv2.COLOR_BGR2RGB))

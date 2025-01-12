@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image
 
 # Step 1: Generate Noisy Images
-def add_gaussian_noise(image, mean=0, std=10):  # 降低高斯噪声强度
+def add_gaussian_noise(image, mean=0, std=10):  
     """
     添加高斯噪声
     """
@@ -19,7 +19,7 @@ def add_gaussian_noise(image, mean=0, std=10):  # 降低高斯噪声强度
     noisy_image = np.clip(image + noise, 0, 255).astype(np.uint8)
     return Image.fromarray(noisy_image)
 
-def add_salt_pepper_noise(image, salt_prob=0.005, pepper_prob=0.005):  # 降低椒盐噪声强度
+def add_salt_pepper_noise(image, salt_prob=0.005, pepper_prob=0.005): 
     """
     添加椒盐噪声
     """
@@ -124,12 +124,12 @@ if __name__ == "__main__":
     generate_noisy_images(input_dir, salt_pepper_output_dir, noise_type='salt_pepper')
 
     # Simulate data for training
-    adjacency_matrix = torch.eye(100)  # 使用单位矩阵作为邻接矩阵
-    noisy_image = torch.rand(100, 3)  # 模拟含噪图像
-    clean_image = torch.rand(100, 3)  # 模拟干净图像
+    adjacency_matrix = torch.eye(100) 
+    noisy_image = torch.rand(100, 3) 
+    clean_image = torch.rand(100, 3) 
 
     # Initialize and train the model
-    model = GCNImageDenoising(input_dim=3, hidden_dim=32, output_dim=3)  # 增加隐藏层维度
+    model = GCNImageDenoising(input_dim=3, hidden_dim=32, output_dim=3)  
     denoised_image = train_gcn(model, adjacency_matrix, noisy_image, clean_image)
 
     # Compute metrics
